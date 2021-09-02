@@ -10,15 +10,16 @@ app.get('/I/want/title', async (req, res, next) => {
   let titles = []
   let list = ""
 
-  titles = await Promise.all(websitesArray.map(url => promisesAll(url)))
-  list = titles.join("")
-
-  if(websitesArray.length === 0){
+  if(websitesArray.length === 0 && typeof(websitesArray) !== "string"){
     res.status(200).send("<h1>No urls provided</h1>")
   }
-  else{
-    res.status(200).send(generateHtml(list))
-  }
+
+  const inputUrls = typeof(websitesArray) === "string" ? [websitesArray] : websitesArray 
+
+  titles = await Promise.all(inputUrls.map(url => promisesAll(url)))
+  list = titles.join("")
+
+  return res.status(200).send(generateHtml(list))
 });
 
 app.get('*', function(req, res){
