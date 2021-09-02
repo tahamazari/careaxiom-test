@@ -32,7 +32,10 @@ const getTitle = async (url) => {
     try{
       const resp = await axios.get(addhttp(url));
       const title = parseTitle(resp.data)
-      resolve(title)
+      resolve({
+        title,
+        success: true
+      })
     }
     catch(error){
       reject({
@@ -40,7 +43,10 @@ const getTitle = async (url) => {
         error
       })
     }
-  })
+  }).catch(error => ({
+    success: false,
+    error
+  }))
 }
 
 const generateHtml = (list) => {
@@ -57,8 +63,26 @@ const generateHtml = (list) => {
   )
 }
 
+const promisesAll = async (url) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const { title, success } = await getTitle(url)
+      if(!success){
+        resolve(`<li>${url} - No response</li>`)
+      }
+      resolve(`<li>${url} - ${title}</li>`)
+    }
+    catch(error){
+      reject({
+        error
+      })
+    }
+  })
+}
+
 module.exports = {
   getTitle,
   generateHtml,
-  parseTitle
+  parseTitle,
+  promisesAll
 }

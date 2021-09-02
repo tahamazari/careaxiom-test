@@ -1,25 +1,8 @@
 const express = require('express');
 
-const { generateHtml, getTitle } = require("./utils")
+const { generateHtml, promisesAll } = require("./utils")
 
 const app = express();
-
-const promisesAll = async (url) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const title = await getTitle(url)
-      if(!title){
-        resolve(`<li>${url} - No response</li>`)
-      }
-      resolve(`<li>${url} - ${title}</li>`)
-    }
-    catch(error){
-      reject({
-        error
-      })
-    }
-  })
-}
 
 app.get('/I/want/title', async (req, res, next) => {
   const { query: { address = [] } = {} } = req
