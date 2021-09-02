@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { generateHtml, promisesAll } = require("./utils")
+const { generateHtml, generateResponse, getTitle } = require("./utils")
 
 const app = express();
 
@@ -10,14 +10,35 @@ app.get('/I/want/title', async (req, res, next) => {
   let titles = []
   let list = ""
 
-  titles = await Promise.all(websitesArray.map(url => promisesAll(url)))
-  list = titles.join("")
-
   if(websitesArray.length === 0){
-    res.status(200).send("<h1>No urls provided</h1>")
+    return res.status(200).send("<h1>No urls provided</h1>")
   }
-  else{
-    res.status(200).send(generateHtml(list))
+
+  if(typeof(websitesArray) === "string"){
+    generateResponse(websitesArray)
+    .then(resp => {
+      titles.push(resp)
+      list = titles.join("")
+      return res.status(200).send(generateHtml(list))
+    })
+  }
+  else {
+    for(let i = 0; i < websitesArray.length; i++){
+      if(i === websitesArray.length - 1){
+        generateResponse(websitesArray[i])
+        .then(resp => {
+          titles.push(resp)
+          list = titles.join("")
+          return res.status(200).send(generateHtml(list))
+        })
+      }
+      else{
+        generateResponse(websitesArray[i])
+        .then(resp => {
+          titles.push(resp)
+        })
+      }
+    }
   }
 });
 

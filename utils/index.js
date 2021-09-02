@@ -25,28 +25,20 @@ const validURL = (str) => {
 }
 
 const getTitle = async (url) => {
-  return new Promise(async (resolve, reject) => {
-    if(!validURL(url)){
-      resolve(false)
+  return axios.get(addhttp(url))
+  .then(resp => {
+    const title = parseTitle(resp.data)
+    return {
+      title,
+      success: true
     }
-    try{
-      const resp = await axios.get(addhttp(url));
-      const title = parseTitle(resp.data)
-      resolve({
-        title,
-        success: true
-      })
+  })
+  .catch(error => {
+    return {
+      error,
+      success: false
     }
-    catch(error){
-      reject({
-        success: false,
-        error
-      })
-    }
-  }).catch(error => ({
-    success: false,
-    error
-  }))
+  })
 }
 
 const generateHtml = (list) => {
@@ -63,19 +55,15 @@ const generateHtml = (list) => {
   )
 }
 
-const promisesAll = async (url) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const { title, success } = await getTitle(url)
-      if(!success){
-        resolve(`<li>${url} - No response</li>`)
-      }
-      resolve(`<li>${url} - ${title}</li>`)
+const generateResponse = async (url) => {
+  return getTitle(url)
+  .then(data => {
+    const { title, success } = data
+    if(success){
+      return `<li>${url} - ${title}</li>`
     }
-    catch(error){
-      reject({
-        error
-      })
+    else if(!success){
+      return `<li>${url} - No response</li>`
     }
   })
 }
@@ -84,5 +72,5 @@ module.exports = {
   getTitle,
   generateHtml,
   parseTitle,
-  promisesAll
+  generateResponse
 }
